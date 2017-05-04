@@ -177,6 +177,8 @@ def eval(x, env = global_env):
         if(global_env.has_key(varname)):
             global_env[varname] = eval(exp,env)
         return varname
+    elif x[0] == 'PARSE':
+        return getRes(numParse(x[1]))
     else:
         proc = env.find(x[0])
         if isinstance(proc, Number) or isinstance(proc, str):
@@ -185,7 +187,36 @@ def eval(x, env = global_env):
             args = [eval(arg,env) for arg in x[1:]]
         return proc(*args)
 
+def numParse(line):
+    res = []
+    for char in line:
+        if not isinstance(char, list):
+            for i in char.replace('+', ' + ').replace('-', ' - ').replace('/', ' / ').replace('*', ' * ').split():
+                res.append(i)
+        else:
+            res.append(numParse(char))
+    return res
 
+def getRes(chars):
+    for i in range(len(chars)-1,-1,-1):
+        if chars[i]=="+":
+            return getRes(chars[0:i])+getRes(chars[i+1:len(chars)])
+        if chars[i]=="-":
+            return getRes(chars[0:i])-getRes(chars[i+1:len(chars)])
+
+    for i in range(len(chars) - 1, -1, -1):
+        if chars[i]=="*":
+            return getRes(chars[0:i])*getRes(chars[i+1:len(chars)])
+        if chars[i]=="/":
+            return getRes(chars[0:i])+getRes(chars[i+1:len(chars)])
+
+    for i in range(len(chars) - 1, -1, -1):
+        if isinstance(chars[i],list):
+            return getRes(chars[i])
+        if isinstance(int(chars[i]),Number):
+            return int(chars[i])
+
+    
 
 while True:
     try:
